@@ -35,7 +35,7 @@ export default function LandingSection() {
                 with AI.
               </p>
             </div>
-            <div className="flex w-full max-w-3xl flex-col items-center gap-8 relative z-50">
+            <div className="flex w-full max-w-3xl flex-col items-center gap-8 relative z-50 mt-10">
               <div className="w-full">
                 <PromptInput
                   className="ring-2 ring-primary "
@@ -60,6 +60,25 @@ export default function LandingSection() {
                   ))}
                 </Suggestions>
               </div>
+            </div>
+
+            <div className="absolute -translate-1/2 left-1/2 w-[5000px] h-[3000px] top-[80%] -z-10">
+              <div className="-translate-x-1/2 absolute bottom-[calc(100%-300px)] left-1/2 h-[2000px] w-[2000px] opacity-20 bg-radial-primary"></div>
+              <div className="absolute -mt-2.5 size-full rounded-[50%] bg-primary/20 opacity-70 [box-shadow:0_-15px_24.8px_var(--primary)]"></div>
+              <div
+                className="absolute z-0 size-full rounded-[50%}
+                bg-background"
+              ></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="w-full py-10 ">
+          <div className="mx-auto max-w-3xl">
+            <div>
+              <h1 className="font-medium text-xl truncate-tight">
+                Recent Projects
+              </h1>
             </div>
           </div>
         </div>

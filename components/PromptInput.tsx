@@ -31,7 +31,7 @@ export default function PromptInput({
     <div className="bg-background ">
       <InputGroup
         className={cn(
-          "min-h-[172px] bg-background rounded-3xl ",
+          "min-h-[172px] bg-background rounded-xl ",
           className && className,
         )}
       >
@@ -45,7 +45,7 @@ export default function PromptInput({
         />
         <InputGroupAddon
           align="block-end"
-          className="flex items-center justify-center"
+          className="flex items-center justify-end"
         >
           {!hideSubmitButton && (
             <InputGroupButton
