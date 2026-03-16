@@ -3,9 +3,22 @@
 import { useState } from "react";
 import Header from "./Header";
 import PromptInput from "../PromptInput";
+import { Suggestion, Suggestions } from "../ai-elements/suggestion";
 
+const suggestions = [
+  {
+    label: "E-commerce",
+    icon: "👟",
+    value: `Sneaker product page. Large high-quality product image on a light gray background. Color selector swatches, size selector grid, and a sticky "Add to Cart" button at the bottom. Title and price in bold, oversized typography. Mobile app, single screen. Style: Neo-Brutalism. High contrast, thick black outlines on buttons and cards, hard shadows (no blur), unrefined geometry, bold solid colors (yellow and black). Trendy streetwear aesthetic.`,
+  },
+];
 export default function LandingSection() {
   const [promptText, setPromptText] = useState<string>("");
+
+  const handleSuggestionClick = (val: string) => {
+    setPromptText(val);
+  };
+
   return (
     <div className="min-h-screen w-full">
       <div className="flex flex-col">
@@ -31,6 +44,21 @@ export default function LandingSection() {
                   isLoading={false}
                   onSubmit={() => {}}
                 />
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 px-5">
+                <Suggestions>
+                  {suggestions.map((s) => (
+                    <Suggestion
+                      key={s.label}
+                      suggestion={s.label}
+                      className="text-xs! h-7! px-2.5! pt-1!"
+                      onClick={() => handleSuggestionClick(s.value)}
+                    >
+                      {s.icon}
+                      <span>{s.label}</span>
+                    </Suggestion>
+                  ))}
+                </Suggestions>
               </div>
             </div>
           </div>
