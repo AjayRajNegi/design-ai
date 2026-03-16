@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { Jost, Geist } from "next/font/google";
+import { Jost } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 const jostSans = Jost({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
@@ -20,8 +19,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${jostSans.className} antialiased`}>{children}</body>
+    <html lang="en" className={cn("font-sans")}>
+      <body className={`${jostSans.className} antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
