@@ -1,9 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Header from "./Header";
 import PromptInput from "../PromptInput";
 import { Suggestion, Suggestions } from "../ai-elements/suggestion";
+import { useCreateProject, useGetProjects } from "@/features/use-project";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
+import { Spinner } from "../ui/spinner";
+import { ProjectType } from "@/types/projec";
+import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
+import Image from "next/image";
+import { FolderOpenDotIcon } from "lucide-react";
 
 const suggestions = [
   {
@@ -13,8 +21,17 @@ const suggestions = [
   },
 ];
 export default function LandingSection() {
+  const { user } = useKindeBrowserClient();
+  const userId = user?.id || "";
   const [promptText, setPromptText] = useState<string>("");
 
+  const { data: projects, isLoading, isError } = useGetProjects(userId);
+
+  const { mutate, isPending } = useCreateProject();
+  const handleSubmit = () => {
+    if (!promptText) return;
+    mutate(promptText);
+  };
   const handleSuggestionClick = (val: string) => {
     setPromptText(val);
   };
@@ -41,8 +58,8 @@ export default function LandingSection() {
                   className="ring-2 ring-primary "
                   promptText={promptText}
                   setPromptText={setPromptText}
-                  isLoading={false}
-                  onSubmit={() => {}}
+                  isLoading={isPending}
+                  onSubmit={handleSubmit}
                 />
               </div>
               <div className="flex flex-wrap justify-center gap-2 px-5">
@@ -75,14 +92,79 @@ export default function LandingSection() {
 
         <div className="w-full py-10 ">
           <div className="mx-auto max-w-3xl">
-            <div>
-              <h1 className="font-medium text-xl truncate-tight">
-                Recent Projects
-              </h1>
-            </div>
+            {userId && (
+              <div>
+                <h1 className="font-medium text-xl truncate-tight">
+                  Recent Projects
+                </h1>
+
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-2">
+                    <Spinner className="size-10" />
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(3, 1fr)",
+                      gap: "0.75rem",
+                      marginTop: "1rem",
+                      width: "100%",
+                    }}
+                  >
+                    {projects?.map((project: ProjectType) => (
+                      <ProjectCard key={project.id} project={project} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            {isError && <p className="text-red-500">Failed to load projects</p>}
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+const ProjectCard = memo(({ project }: { project: ProjectType }) => {
+  const router = useRouter();
+  const createdAtDate = new Date(project.createdAt);
+  const timeAgo = formatDistanceToNow(createdAtDate, { addSuffix: true });
+  const thumbnail = project.thumbnail || null;
+
+  const onRoute = () => {
+    router.push(`/project/${project.id}`);
+  };
+  return (
+    <div
+      role="button"
+      className="flex flex-col border rounded-xl cursor-pointer hover:shadow-md overflow-hidden min-w-0"
+      onClick={onRoute}
+    >
+      <div className="h-40 bg-[#eee] relative overflow-hidden flex items-center justify-center py-4">
+        {thumbnail ? (
+          <Image
+            src={thumbnail}
+            className="object-cover object-left scale-110"
+            alt="thumbnail"
+            fill
+          />
+        ) : (
+          <div className="w-16 h-16 aspect-square rounded-full flex items-center justify-center text-primary bg-primary/20">
+            <FolderOpenDotIcon />
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 flex flex-col ">
+        <h3 className="font-semibold text-sm truncate w-full mb-1 line-clamp-1">
+          {project.name}
+        </h3>
+        <p className="text-xs text-muted-foreground">{timeAgo}</p>
+      </div>
+    </div>
+  );
+});
+
+ProjectCard.displayName = "ProjectCard";
