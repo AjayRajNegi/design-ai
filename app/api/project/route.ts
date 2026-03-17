@@ -3,6 +3,38 @@ import prisma from "@/lib/primsa";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextResponse } from "next/server";
 
+export async function GET() {
+  try {
+    const session = getKindeServerSession();
+    const user = await session.getUser();
+
+    if (!user) throw new Error("Unauthorized.");
+
+    const projects = await prisma.project.findMany({
+      where: {
+        userId: user.id,
+      },
+      take: 10,
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: projects,
+    });
+  } catch (error) {
+    console.log("Error occured:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to fetch project.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { prompt } = await req.json();
@@ -29,7 +61,7 @@ export async function POST(req: Request) {
     console.log("Error occured:", error);
     return NextResponse.json(
       {
-        error: "Failed to create a projcet.",
+        error: "Failed to create a project.",
       },
       { status: 500 },
     );
