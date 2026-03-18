@@ -22,16 +22,20 @@ export default function Canvas({
       : null;
   return (
     <>
-      <div className="relative w-full h-full overflow-hidden ">
+      <div
+        className="relative w-full h-full overflow-hidden "
+        style={{ minHeight: "20px" }}
+      >
         <CanvasFloatingToolbar />
         {currentStatus && <CanvasLoader status={currentStatus} />}
+
         <div
           className={cn(
             `absolute inset-0 w-full h-full bg-[#eee] dark:bg-[#242423] p-3`,
           )}
           style={{
             backgroundImage:
-              "radial-gradient(circle,var(--primary)) 1px, transparent 1px",
+              "radial-gradient(circle, var(--primary) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         ></div>
@@ -40,11 +44,11 @@ export default function Canvas({
   );
 }
 
-function CanvasLoader({}: { status?: LoadingStatusType | "fetching" }) {
+function CanvasLoader({ status }: { status?: LoadingStatusType | "fetching" }) {
   return (
     <div
       className={cn(
-        `absolute top-4 left-1/2 -translate-x-1/2 min-w-40 max-w-full px-4 pt-1.5 pb-2 rounded-br-xl rounded-bl-xl shadow-md flex items-center space-x-2 z-50`,
+        `absolute top-20 left-1/2 -translate-x-1/2 min-w-40 max-w-full px-4 pt-1.5 pb-2 rounded-br-xl rounded-bl-xl shadow-md flex items-center space-x-2 z-999`,
         status === "fetching" && "bg-gray-500 text-white",
         status === "running" && "bg-amber-500 text-white",
         status === "analyzing" && "bg-blue-500 text-white",

@@ -39,10 +39,10 @@ function ThemeItem({
   const colors = parseThemeColors(theme.style);
   return (
     <button
-      onClick={() => onselect}
+      onClick={onSelect}
       className={cn(
         `flex items-center justify-between w-full p-1 rounded-xl border gap-4 bg-background`,
-        isSelected ? "border-2" : "border",
+        isSelected ? "border-2" : "",
       )}
       style={{ borderColor: isSelected ? colors.primary : undefined }}
     >
@@ -51,8 +51,13 @@ function ThemeItem({
           <div
             className="w-4 h-4 rounded-full border"
             key={key}
-            style={{ backgroundColor: colors[key], borderColor: "#ccc" }}
-          ></div>
+            style={{
+              backgroundColor: colors[key as keyof typeof colors],
+              borderColor: "#ccc",
+              width: "16px",
+              height: "16px",
+            }}
+          />
         ))}
       </div>
       <div className="flex items-center gap-2 flex-[0.9]">

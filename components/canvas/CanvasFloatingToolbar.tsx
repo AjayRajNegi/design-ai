@@ -3,12 +3,13 @@
 import { useCanvas } from "@/context/CanvasProvider";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { ChevronDown, Palette, Wand2 } from "lucide-react";
+import { CameraIcon, ChevronDown, Palette, Save, Wand2 } from "lucide-react";
 import PromptInput from "../PromptInput";
 import { useState } from "react";
 import { parseThemeColors } from "@/types/themes";
 import { cn } from "@/lib/utils";
 import ThemeSelector from "./ThemeSelector";
+import { Separator } from "../ui/separator";
 
 export default function CanvasFloatingToolbar() {
   const { themes, theme: currentTheme, setTheme } = useCanvas();
@@ -20,12 +21,9 @@ export default function CanvasFloatingToolbar() {
         <div className="flex flex-row items-center gap-2 px-3">
           <Popover>
             <PopoverTrigger>
-              <Button
-                size="icon-sm"
-                className="px-4 bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200/50 cursor-pointer"
-              >
+              <div className="px-4 bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200/50 cursor-pointer">
                 <Wand2 className="size-4" />
-              </Button>
+              </div>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-2 rounded-xl! shadow-lg border mt-1">
               <PromptInput
@@ -72,11 +70,30 @@ export default function CanvasFloatingToolbar() {
                   <ChevronDown className="size-4" />
                 </div>
               </div>
-              <PopoverContent className="px-2 rounded-xl shadow-lg border">
-                <ThemeSelector />
-              </PopoverContent>
             </PopoverTrigger>
+            <PopoverContent className="px-2 rounded-xl shadow-lg border">
+              <ThemeSelector />
+            </PopoverContent>
           </Popover>
+
+          <Separator orientation="vertical" className="h-4!" />
+          <div className="flex items-center gap-2 ">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              className="rounded-full cursor-pointer p-1"
+            >
+              <CameraIcon size={4} />
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
+              className="rounded-full cursor-pointer"
+            >
+              <Save size={4.5} />
+              Save
+            </Button>
+          </div>
         </div>
       </div>
     </div>
