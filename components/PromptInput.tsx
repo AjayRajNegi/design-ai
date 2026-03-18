@@ -13,7 +13,7 @@ import { CornerDownLeftIcon } from "lucide-react";
 interface PropsType {
   className?: string;
   promptText: string;
-  isLoading: boolean;
+  isLoading?: boolean;
   onSubmit?: () => void;
   hideSubmitButton?: boolean;
   setPromptText: (value: string) => void;

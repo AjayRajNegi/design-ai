@@ -1,6 +1,7 @@
 import { LoadingStatusType, useCanvas } from "@/context/CanvasProvider";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
+import CanvasFloatingToolbar from "./CanvasFloatingToolbar";
 
 export default function Canvas({
   projectId,
@@ -22,7 +23,7 @@ export default function Canvas({
   return (
     <>
       <div className="relative w-full h-full overflow-hidden ">
-        {/* <FloatingToolBar/> */}
+        <CanvasFloatingToolbar />
         {currentStatus && <CanvasLoader status={currentStatus} />}
         <div
           className={cn(
