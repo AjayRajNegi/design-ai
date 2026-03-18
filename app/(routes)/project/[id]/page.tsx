@@ -28,9 +28,13 @@ export default function Page() {
         hasInitialData={hasInitialData}
         projectId={project?.id}
       >
-        <div className="flex w-full overflow-hidden">
-          <div className="relative">
-            <Canvas />
+        <div className="flex flex-1 w-full overflow-hidden">
+          <div className="relative flex-1">
+            <Canvas
+              projectId={project?.id}
+              projectName={project?.name}
+              isPending={isPending}
+            />
           </div>
         </div>
       </CanvasProvider>
