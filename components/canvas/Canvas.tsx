@@ -36,7 +36,7 @@ export default function Canvas({
         style={{ minHeight: "20px" }}
       >
         <CanvasFloatingToolbar />
-        {currentStatus && <CanvasLoader status={currentStatus} />}
+        {/* {currentStatus && <CanvasLoader status={currentStatus} />} */}
 
         <TransformWrapper
           initialScale={0.53}

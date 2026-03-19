@@ -16,12 +16,12 @@ export default function CanvasFloatingToolbar() {
   const [promptText, setPromptText] = useState<string>("");
 
   return (
-    <div className="fixed top-6 left-1/2 -translate-x-1/2">
+    <div className="fixed top-6 left-1/2 -translate-x-1/2 z-10">
       <div className="w-full max-w-2xl bg-background dark:bg-gray-950 rounded-full shadow-xl border">
-        <div className="flex flex-row items-center gap-2 px-3">
+        <div className="flex flex-row items-center gap-2 px-2">
           <Popover>
             <PopoverTrigger>
-              <div className="px-4 bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200/50 cursor-pointer">
+              <div className="px-1.5 bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-full py-1.5 shadow-lg shadow-purple-200/50 cursor-pointer">
                 <Wand2 className="size-4" />
               </div>
             </PopoverTrigger>
@@ -76,7 +76,7 @@ export default function CanvasFloatingToolbar() {
             </PopoverContent>
           </Popover>
 
-          <Separator orientation="vertical" className="h-4!" />
+          <Separator orientation="vertical" className="h-4! mt-3" />
           <div className="flex items-center gap-2 ">
             <Button
               variant="outline"
