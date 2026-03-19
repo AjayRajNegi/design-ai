@@ -7,7 +7,7 @@ import { Suggestion, Suggestions } from "../ai-elements/suggestion";
 import { useCreateProject, useGetProjects } from "@/features/use-project";
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { Spinner } from "../ui/spinner";
-import { ProjectType } from "@/types/projec";
+import { ProjectType } from "@/types/project";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";

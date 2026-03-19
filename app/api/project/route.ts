@@ -1,7 +1,7 @@
 import { generateProjectName } from "@/app/action/action";
 import prisma from "@/lib/primsa";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -35,7 +35,7 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const { prompt } = await req.json();
     const session = getKindeServerSession();
