@@ -6,6 +6,9 @@ import CanvasFloatingToolbar from "./CanvasFloatingToolbar";
 import { useState } from "react";
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import CanvasControls from "./CanvasControls";
+import DeviceFrame from "./DeviceFrame";
+
+const DEMO_HTML = `<div style="color:red; height:200px;width:200px; background-color:"red">Hello</div>`;
 
 export default function Canvas({
   projectId,
@@ -85,6 +88,15 @@ export default function Canvas({
                   }}
                 >
                   <div className="size-5 bg-black">Box</div>
+                  <DeviceFrame
+                    frameId="demo"
+                    title="Demo Screen"
+                    initialPosition={{ x: 1000, y: 400 }}
+                    toolMode={toolMode}
+                    themeStyle={theme?.style}
+                    html={DEMO_HTML}
+                    scale={currentScale}
+                  />
                 </TransformComponent>
               </div>
               <CanvasControls

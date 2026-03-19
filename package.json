@@ -27,6 +27,7 @@
     "random-word-slugs": "^0.1.7",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-rnd": "^10.5.3",
     "react-zoom-pan-pinch": "3.7.0",
     "shadcn": "^4.0.8",
     "sonner": "^2.0.7",

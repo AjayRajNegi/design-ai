@@ -1,12 +1,6 @@
 import { FrameType } from "@/types/project";
 import { THEME_LIST, ThemeType } from "@/types/themes";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useCallback, useContext, useState } from "react";
 
 export type LoadingStatusType =
   | "idle"
