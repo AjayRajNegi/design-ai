@@ -5,6 +5,7 @@ import { Spinner } from "../ui/spinner";
 import CanvasFloatingToolbar from "./CanvasFloatingToolbar";
 import { useState } from "react";
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
+import CanvasControls from "./CanvasControls";
 
 export default function Canvas({
   projectId,
@@ -76,11 +77,14 @@ export default function Canvas({
                     width: "100%",
                     height: "100%",
                     overflow: "unset",
+                  }}
+                  contentStyle={{
+                    width: "100%",
+                    height: "100%",
                     background: "red",
                   }}
-                  contentStyle={{ width: "100%", height: "100%" }}
                 >
-                  <div>box</div>
+                  <div className="size-5 bg-black">Box</div>
                 </TransformComponent>
               </div>
               <CanvasControls
