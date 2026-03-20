@@ -3,7 +3,7 @@ import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import { Rnd } from "react-rnd";
 import { useCanvas } from "@/context/CanvasProvider";
 import { getHTMLWrapper } from "@/lib/frameWrapper";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import DeviceFrameToolbar from "./DeviceFrameToolbar";
 
@@ -17,6 +17,7 @@ type PropsType = {
   scale?: number;
   toolMode: ToolModeType;
   themeStyle?: string;
+  onOpenHtmlDialog: () => void;
 };
 
 export default function DeviceFrame({
@@ -29,6 +30,7 @@ export default function DeviceFrame({
   scale = 1,
   toolMode,
   themeStyle,
+  onOpenHtmlDialog,
 }: PropsType) {
   const { selectedFrameId, setSelectedFrameId } = useCanvas();
   const [frameSize, setFrameSize] = useState({
@@ -38,6 +40,19 @@ export default function DeviceFrame({
   const iFrameRef = useRef<HTMLIFrameElement>(null);
   const isSelected = selectedFrameId === frameId;
   const fullHtml = getHTMLWrapper(html, title, themeStyle, frameId);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (
+        event.data.type === "FRAME_HEIGHT" &&
+        event.data.frameId === frameId
+      ) {
+        setFrameSize((prev) => ({ ...prev, height: event.data.height }));
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [frameId]);
 
   return (
     <Rnd
@@ -94,7 +109,7 @@ export default function DeviceFrame({
           disabled={false}
           isDownloading={false}
           onDownloadPng={() => {}}
-          onOpenHtmlDialog={() => {}}
+          onOpenHtmlDialog={onOpenHtmlDialog}
         />
         <div
           className={cn(

@@ -8,6 +8,7 @@ import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import CanvasControls from "./CanvasControls";
 import DeviceFrame from "./DeviceFrame";
 import DeviceFrameSkeleton from "./DeviceFrameSkeleton";
+import HtmlDialog from "./HtmlDialog";
 
 const DEMO_HTML = `<div style="color:red; height:200px;width:200px; background-color:"red">Hello</div>`;
 
@@ -27,12 +28,17 @@ export default function Canvas({
 
   const [zoomPercentage, setZoomPercentage] = useState<number>(53);
   const [currentScale, setCurrentScale] = useState<number>(0.53);
+  const [openHtmlDialog, setOpenHtmlDialog] = useState(false);
 
   const currentStatus = isPending
     ? "fetching"
     : loadingStatus !== "idle" && loadingStatus !== "completed"
       ? loadingStatus
       : null;
+
+  const onOpenHtmlDialog = () => {
+    setOpenHtmlDialog(true);
+  };
   return (
     <>
       <div
@@ -40,7 +46,7 @@ export default function Canvas({
         style={{ minHeight: "20px" }}
       >
         <CanvasFloatingToolbar />
-        {/* {currentStatus && <CanvasLoader status={currentStatus} />} */}
+        {currentStatus && <CanvasLoader status={currentStatus} />}
 
         <TransformWrapper
           initialScale={0.53}
@@ -109,10 +115,21 @@ export default function Canvas({
                           toolMode={toolMode}
                           themeStyle={theme?.style}
                           scale={currentScale}
+                          onOpenHtmlDialog={onOpenHtmlDialog}
                         />
                       );
                     })}
                   </div>
+                  <DeviceFrame
+                    frameId="demo"
+                    title="Demo Screen"
+                    html={DEMO_HTML}
+                    initialPosition={{ x: 1000, y: 100 }}
+                    toolMode={toolMode}
+                    themeStyle={theme?.style}
+                    scale={currentScale}
+                    onOpenHtmlDialog={onOpenHtmlDialog}
+                  />
                 </TransformComponent>
               </div>
               <CanvasControls
@@ -126,6 +143,13 @@ export default function Canvas({
           )}
         </TransformWrapper>
       </div>
+
+      <HtmlDialog
+        html={selectedFrame?.htmlContent || DEMO_HTML}
+        themeStyle={theme?.style}
+        open={openHtmlDialog}
+        onOpenChange={setOpenHtmlDialog}
+      />
     </>
   );
 }
