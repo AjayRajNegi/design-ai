@@ -6,6 +6,11 @@ import CanvasFloatingToolbar from "./CanvasFloatingToolbar";
 import { useState } from "react";
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import CanvasControls from "./CanvasControls";
+import DeviceFrame from "./DeviceFrame";
+import DeviceFrameSkeleton from "./DeviceFrameSkeleton";
+import HtmlDialog from "./HtmlDialog";
+
+const DEMO_HTML = `<div style="color:red; height:200px;width:200px; background-color:"red">Hello</div>`;
 
 export default function Canvas({
   projectId,
@@ -23,12 +28,17 @@ export default function Canvas({
 
   const [zoomPercentage, setZoomPercentage] = useState<number>(53);
   const [currentScale, setCurrentScale] = useState<number>(0.53);
+  const [openHtmlDialog, setOpenHtmlDialog] = useState(false);
 
   const currentStatus = isPending
     ? "fetching"
     : loadingStatus !== "idle" && loadingStatus !== "completed"
       ? loadingStatus
       : null;
+
+  const onOpenHtmlDialog = () => {
+    setOpenHtmlDialog(true);
+  };
   return (
     <>
       <div
@@ -36,7 +46,7 @@ export default function Canvas({
         style={{ minHeight: "20px" }}
       >
         <CanvasFloatingToolbar />
-        {/* {currentStatus && <CanvasLoader status={currentStatus} />} */}
+        {currentStatus && <CanvasLoader status={currentStatus} />}
 
         <TransformWrapper
           initialScale={0.53}
@@ -58,7 +68,6 @@ export default function Canvas({
         >
           {({ zoomIn, zoomOut }) => (
             <>
-              {" "}
               <div
                 className={cn(
                   `absolute inset-0 w-full h-full bg-[#eee] dark:bg-[#242423] p-3`,
@@ -81,10 +90,46 @@ export default function Canvas({
                   contentStyle={{
                     width: "100%",
                     height: "100%",
-                    background: "red",
                   }}
                 >
-                  <div className="size-5 bg-black">Box</div>
+                  <div>
+                    {frames?.map((frame, index: number) => {
+                      const baseX = 100 + index * 480;
+                      const y = 100;
+
+                      if (frame.isLoading) {
+                        return (
+                          <DeviceFrameSkeleton
+                            key={index}
+                            style={{ transform: `translate${baseX}px 100px` }}
+                          />
+                        );
+                      }
+                      return (
+                        <DeviceFrame
+                          key={frame.id}
+                          frameId={frame.id}
+                          title={frame.title}
+                          html={DEMO_HTML}
+                          initialPosition={{ x: baseX, y }}
+                          toolMode={toolMode}
+                          themeStyle={theme?.style}
+                          scale={currentScale}
+                          onOpenHtmlDialog={onOpenHtmlDialog}
+                        />
+                      );
+                    })}
+                  </div>
+                  <DeviceFrame
+                    frameId="demo"
+                    title="Demo Screen"
+                    html={DEMO_HTML}
+                    initialPosition={{ x: 1000, y: 100 }}
+                    toolMode={toolMode}
+                    themeStyle={theme?.style}
+                    scale={currentScale}
+                    onOpenHtmlDialog={onOpenHtmlDialog}
+                  />
                 </TransformComponent>
               </div>
               <CanvasControls
@@ -98,6 +143,13 @@ export default function Canvas({
           )}
         </TransformWrapper>
       </div>
+
+      <HtmlDialog
+        html={selectedFrame?.htmlContent || DEMO_HTML}
+        themeStyle={theme?.style}
+        open={openHtmlDialog}
+        onOpenChange={setOpenHtmlDialog}
+      />
     </>
   );
 }
