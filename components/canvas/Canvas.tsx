@@ -62,7 +62,6 @@ export default function Canvas({
         >
           {({ zoomIn, zoomOut }) => (
             <>
-              {" "}
               <div
                 className={cn(
                   `absolute inset-0 w-full h-full bg-[#eee] dark:bg-[#242423] p-3`,
@@ -105,7 +104,7 @@ export default function Canvas({
                           key={frame.id}
                           frameId={frame.id}
                           title={frame.title}
-                          html={frame.htmlContent}
+                          html={DEMO_HTML}
                           initialPosition={{ x: baseX, y }}
                           toolMode={toolMode}
                           themeStyle={theme?.style}

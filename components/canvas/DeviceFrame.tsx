@@ -5,6 +5,7 @@ import { useCanvas } from "@/context/CanvasProvider";
 import { getHTMLWrapper } from "@/lib/frameWrapper";
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import DeviceFrameToolbar from "./DeviceFrameToolbar";
 
 type PropsType = {
   html: string;
@@ -87,7 +88,14 @@ export default function DeviceFrame({
       )}
     >
       <div className="w-full h-full">
-        {/* <FrameToolbar /> */}
+        <DeviceFrameToolbar
+          title={title}
+          isSelected={isSelected && toolMode !== TOOL_MODE_ENUM.HAND}
+          disabled={false}
+          isDownloading={false}
+          onDownloadPng={() => {}}
+          onOpenHtmlDialog={() => {}}
+        />
         <div
           className={cn(
             `relative w-full h-auto shadow-sm rounded-[36px] overflow-hidden`,
