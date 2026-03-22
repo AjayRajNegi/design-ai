@@ -1,4 +1,5 @@
 import { generateProjectName } from "@/app/action/action";
+import { inngest } from "@/inngest/client";
 import prisma from "@/lib/primsa";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
@@ -52,6 +53,19 @@ export async function POST(req: NextRequest) {
         name: projectName,
       },
     });
+
+    try {
+      await inngest.send({
+        name: "ui/generate.screens",
+        data: {
+          userId,
+          projectId: project.id,
+          prompt,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+    }
 
     return NextResponse.json({
       success: true,
