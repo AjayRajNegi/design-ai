@@ -45,7 +45,7 @@ const AnalysisSchema = z.object({
 
 export const generateScreen = inngest.createFunction(
   { id: "generate-ui-screen", triggers: [{ event: "ui/generate.screens" }] },
-  async ({ event, step }) => {
+  async ({ event, step, publish }) => {
     const {
       userId,
       projectId,
@@ -53,10 +53,28 @@ export const generateScreen = inngest.createFunction(
       frames,
       theme: existingTHeme,
     } = event.data;
+    const CHANNEL = `user:${userId}`;
     const isExistingGeneration = Array.isArray(frames) && frames.length > 0;
+
+    await publish({
+      channel: CHANNEL,
+      topic: "generation.start",
+      data: {
+        status: "running",
+        projectId: projectId,
+      },
+    });
 
     // Analyze the prompts
     const analysis = await step.run("analyze-and-plan-screens", async () => {
+      await publish({
+        channel: CHANNEL,
+        topic: "analysis.start",
+        data: {
+          status: "analyzing",
+          projectId: projectId,
+        },
+      });
       const contextHTML = isExistingGeneration
         ? frames
             .slice(0, 4)
@@ -88,6 +106,18 @@ export const generateScreen = inngest.createFunction(
           },
         });
       }
+
+      await publish({
+        channel: CHANNEL,
+        topic: "analysis.complete",
+        data: {
+          status: "generating",
+          theme: themeToUse,
+          totalScreens: object.screens.length,
+          screens: object.screens,
+          projectId: projectId,
+        },
+      });
 
       return { ...object, themeToUse };
     });
@@ -155,8 +185,26 @@ export const generateScreen = inngest.createFunction(
           },
         });
 
+        await publish({
+          channel: CHANNEL,
+          topic: "frame.craeted",
+          data: {
+            frame: frame,
+            screenId: screenPlan.id,
+            projectId: projectId,
+          },
+        });
+
         return { success: true, frame: frame };
       });
     }
+    await publish({
+      channel: CHANNEL,
+      topic: "generation.complete",
+      data: {
+        status: "completed",
+        projectId: projectId,
+      },
+    });
   },
 );

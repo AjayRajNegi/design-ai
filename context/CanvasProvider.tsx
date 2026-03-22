@@ -1,6 +1,14 @@
+import { fetchRealtimeSubscriptionToken } from "@/app/action/realtime";
+import { useInngestSubscription } from "@inngest/realtime/hooks";
 import { FrameType } from "@/types/project";
 import { THEME_LIST, ThemeType } from "@/types/themes";
-import { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 export type LoadingStatusType =
   | "idle"
@@ -50,6 +58,14 @@ export const CanvasProvider = ({
   const [loadingStatus, setLoadingStatus] = useState<LoadingStatusType>(
     hasInitialData ? "idle" : "running",
   );
+  const [prevProjectId, setPrevProjectId] = useState(projectId);
+
+  if (projectId !== prevProjectId) {
+    setPrevProjectId(projectId);
+    setFrames(initialFrames);
+    setThemeId(initialThemeId || THEME_LIST[0].id);
+    setSelectedFrameId(null);
+  }
 
   const theme = THEME_LIST.find((t) => t.id === themeId);
   const selectedFrame =
@@ -57,7 +73,61 @@ export const CanvasProvider = ({
       ? frames.find((f) => f.id === selectedFrameId) || null
       : null;
 
-  //iggnest
+  const { freshData } = useInngestSubscription({
+    refreshToken: fetchRealtimeSubscriptionToken,
+  });
+
+  useEffect(() => {
+    if (!freshData || freshData.length === 0) {
+      return;
+    }
+    freshData.forEach((message) => {
+      const { data, topic } = message;
+      if (data.projectId !== projectId) return;
+
+      switch (topic) {
+        case "generation.start":
+          setLoadingStatus("running");
+          break;
+        case "analysis.start":
+          setLoadingStatus("analyzing");
+          break;
+        case "analysis.complete":
+          if (data.theme) setThemeId(data.theme);
+
+          if (data.screens && data.screens.length > 0) {
+            const skeletonFrames: FrameType[] = data.screens.map((s: any) => ({
+              id: s.id,
+              title: s.name,
+              htmlContent: "",
+              isLoading: true,
+            }));
+            setFrames((prev) => [...prev, ...skeletonFrames]);
+          }
+          break;
+        case "frame.created":
+          if (data.frame) {
+            setFrames((prev) => {
+              const newFrames = [...prev];
+              const idx = newFrames.findIndex((f) => f.id === data.screenId);
+              if (idx !== -1) newFrames[idx] = data.frame;
+              else newFrames.push(data.frame);
+              return newFrames;
+            });
+          }
+          break;
+        case "generation.complete":
+          setLoadingStatus("completed");
+          setTimeout(() => {
+            setLoadingStatus("idle");
+          }, 1000);
+          break;
+
+        default:
+          break;
+      }
+    });
+  }, [projectId, freshData]);
 
   const addFrame = useCallback((frame: FrameType) => {
     setFrames((prev) => [...prev, frame]);
