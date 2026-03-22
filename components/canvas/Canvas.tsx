@@ -110,7 +110,7 @@ export default function Canvas({
                           key={frame.id}
                           frameId={frame.id}
                           title={frame.title}
-                          html={DEMO_HTML}
+                          html={frame.htmlContent}
                           initialPosition={{ x: baseX, y }}
                           toolMode={toolMode}
                           themeStyle={theme?.style}
