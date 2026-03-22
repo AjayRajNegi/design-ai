@@ -6,6 +6,7 @@ import { FrameType } from "@/types/project";
 import { ANALYSIS_PROMPT, GENERATION_SYSTEM_PROMPT } from "@/lib/prompt";
 import prisma from "@/lib/primsa";
 import { BASE_VARIABLES, THEME_LIST } from "@/types/themes";
+import { unsplashTool } from "./tool";
 
 const AnalysisSchema = z.object({
   theme: z
@@ -90,7 +91,6 @@ export const generateScreen = inngest.createFunction(
     });
 
     // Screen generation of each screens
-    // const analysis = await step.run("analyze-and-plan-screens", async () => {});
 
     for (let i = 0; i < analysis.screens.length; i++) {
       const screenPlan = analysis.screens[i];
@@ -106,7 +106,7 @@ export const generateScreen = inngest.createFunction(
         const result = await generateText({
           model: openrouter.chat("google/gemini-2.5-flash-lite"),
           system: GENERATION_SYSTEM_PROMPT,
-          tools: {},
+          tools: { unsplashTool },
           stopWhen: stepCountIs(5),
           prompt: `- Screen ${i + 1}/${analysis.screens.length}
           - Screen ID: ${screenPlan.id}
