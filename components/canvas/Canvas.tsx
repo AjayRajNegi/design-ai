@@ -32,7 +32,7 @@ export default function Canvas({
 
   const currentStatus = isPending
     ? "fetching"
-    : loadingStatus !== "idle" && loadingStatus !== "completed"
+    : loadingStatus !== "idle"
       ? loadingStatus
       : null;
 
