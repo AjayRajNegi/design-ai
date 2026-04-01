@@ -10,7 +10,10 @@ import { parseThemeColors } from "@/types/themes";
 import { cn } from "@/lib/utils";
 import ThemeSelector from "./ThemeSelector";
 import { Separator } from "../ui/separator";
-import { useGenerateDesignById } from "@/features/user-project-id";
+import {
+  useGenerateDesignById,
+  useUpdateProject,
+} from "@/features/user-project-id";
 import { Spinner } from "../ui/spinner";
 
 export default function CanvasFloatingToolbar({
@@ -22,9 +25,16 @@ export default function CanvasFloatingToolbar({
   const [promptText, setPromptText] = useState<string>("");
 
   const { mutate, isPending } = useGenerateDesignById(projectId);
+  const update = useUpdateProject(projectId);
+
   const handleAIGenerate = () => {
     if (!prompt) return;
     mutate(promptText);
+  };
+
+  const handleUpdate = () => {
+    if (!currentTheme) return;
+    update.mutate(currentTheme.id);
   };
 
   return (
@@ -105,9 +115,9 @@ export default function CanvasFloatingToolbar({
               variant="default"
               size="sm"
               className="rounded-full cursor-pointer"
+              onClick={handleUpdate}
             >
-              <Save size={4.5} />
-              Save
+              {update.isPending ? <Spinner /> : <Save size={4.5} />}
             </Button>
           </div>
         </div>

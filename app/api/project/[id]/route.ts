@@ -1,4 +1,3 @@
-import { generateProjectName } from "@/app/action/action";
 import { inngest } from "@/inngest/client";
 import prisma from "@/lib/primsa";
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -100,6 +99,45 @@ export async function POST(
     return NextResponse.json(
       {
         error: "Failed to generate frame.",
+      },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params;
+    const { themeId } = await req.json();
+    const session = getKindeServerSession();
+    const user = await session.getUser();
+
+    if (!user) throw new Error("Unauthorized.");
+    if (!themeId) throw new Error("Missing Theme.");
+
+    const userId = user.id;
+    const project = await prisma.project.update({
+      where: {
+        id,
+        userId,
+      },
+      data: {
+        theme: themeId,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      project,
+    });
+  } catch (error) {
+    console.log("Error occured:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to update project.",
       },
       { status: 500 },
     );
