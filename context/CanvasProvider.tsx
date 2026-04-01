@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { fetchRealtimeSubscriptionToken } from "@/app/action/realtime";
 import { useInngestSubscription } from "@inngest/realtime/hooks";
 import { FrameType } from "@/types/project";
