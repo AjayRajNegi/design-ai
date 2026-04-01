@@ -1,4 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import { Rnd } from "react-rnd";
 import { useCanvas } from "@/context/CanvasProvider";
@@ -107,7 +109,7 @@ export default function DeviceFrame({
       disableDragging={toolMode === TOOL_MODE_ENUM.HAND}
       enableResizing={isSelected && toolMode !== TOOL_MODE_ENUM.HAND}
       scale={scale}
-      onClick={(e) => {
+      onClick={(e: any) => {
         e.stopPropagation();
         if (toolMode === TOOL_MODE_ENUM.SELECT) {
           setSelectedFrameId(frameId);
