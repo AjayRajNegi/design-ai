@@ -10,10 +10,22 @@ import { parseThemeColors } from "@/types/themes";
 import { cn } from "@/lib/utils";
 import ThemeSelector from "./ThemeSelector";
 import { Separator } from "../ui/separator";
+import { useGenerateDesignById } from "@/features/user-project-id";
+import { Spinner } from "../ui/spinner";
 
-export default function CanvasFloatingToolbar() {
+export default function CanvasFloatingToolbar({
+  projectId,
+}: {
+  projectId: string;
+}) {
   const { themes, theme: currentTheme, setTheme } = useCanvas();
   const [promptText, setPromptText] = useState<string>("");
+
+  const { mutate, isPending } = useGenerateDesignById(projectId);
+  const handleAIGenerate = () => {
+    if (!prompt) return;
+    mutate(promptText);
+  };
 
   return (
     <div className="fixed top-6 left-1/2 -translate-x-1/2 z-10">
@@ -32,8 +44,12 @@ export default function CanvasFloatingToolbar() {
                 className="min-h-[15px] ring-1! ring-purple-500 rounded-xl! shadow-none border-muted"
                 hideSubmitButton={true}
               />
-              <Button className="mt-2 w-full bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200/50 cursor-pointer">
-                Design
+              <Button
+                className="mt-2 w-full bg-linear-to-r from-purple-500 to-indigo-600 text-white rounded-2xl shadow-lg shadow-purple-200/50 cursor-pointer"
+                onClick={handleAIGenerate}
+                disabled={isPending}
+              >
+                {isPending ? <Spinner /> : <>Design</>}
               </Button>
             </PopoverContent>
           </Popover>
