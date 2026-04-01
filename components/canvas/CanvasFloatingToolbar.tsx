@@ -18,8 +18,12 @@ import { Spinner } from "../ui/spinner";
 
 export default function CanvasFloatingToolbar({
   projectId,
+  isScreenshotting,
+  onScreenshot,
 }: {
   projectId: string;
+  isScreenshotting: boolean;
+  onScreenshot: () => void;
 }) {
   const { themes, theme: currentTheme, setTheme } = useCanvas();
   const [promptText, setPromptText] = useState<string>("");
@@ -107,9 +111,11 @@ export default function CanvasFloatingToolbar({
             <Button
               variant="outline"
               size="icon-sm"
+              disabled={isScreenshotting}
+              onClick={onScreenshot}
               className="rounded-full cursor-pointer p-1"
             >
-              <CameraIcon size={4} />
+              {isScreenshotting ? <Spinner /> : <CameraIcon size={4} />}
             </Button>
             <Button
               variant="default"

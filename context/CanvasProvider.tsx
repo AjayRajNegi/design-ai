@@ -93,6 +93,7 @@ export const CanvasProvider = ({
           setLoadingStatus("analyzing");
           break;
         case "analysis.complete":
+          setLoadingStatus("generating");
           if (data.theme) setThemeId(data.theme);
 
           if (data.screens && data.screens.length > 0) {

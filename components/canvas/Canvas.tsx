@@ -3,12 +3,13 @@ import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch";
 import { cn } from "@/lib/utils";
 import { Spinner } from "../ui/spinner";
 import CanvasFloatingToolbar from "./CanvasFloatingToolbar";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import CanvasControls from "./CanvasControls";
 import DeviceFrame from "./DeviceFrame";
-import DeviceFrameSkeleton from "./DeviceFrameSkeleton";
 import HtmlDialog from "./HtmlDialog";
+import { toast } from "sonner";
+import axios from "axios";
 
 const DEMO_HTML = `<div style="color:red; height:200px;width:200px; background-color:"red">Hello</div>`;
 
@@ -29,23 +30,142 @@ export default function Canvas({
   const [zoomPercentage, setZoomPercentage] = useState<number>(53);
   const [currentScale, setCurrentScale] = useState<number>(0.53);
   const [openHtmlDialog, setOpenHtmlDialog] = useState(false);
+  const [isScreenshotting, setIsScreenshotting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const currentStatus = isPending
+  const canvasRootRef = useRef<HTMLDivElement>(null);
+
+  const currentStatus = isSaving
     ? "fetching"
-    : loadingStatus !== "idle"
-      ? loadingStatus
-      : null;
+    : isPending
+      ? "fetching"
+      : loadingStatus !== "idle" && loadingStatus !== "completed"
+        ? loadingStatus
+        : null;
+
+  const saveThumbnailToProject = useCallback(
+    async (projectId: string | null) => {
+      try {
+        if (!projectId) return null;
+        const result = getCanvasHtmlContent();
+        if (!result?.html) return null;
+        setSelectedFrameId(null);
+        setIsSaving(true);
+
+        const response = await axios.post("/api/screenshot", {
+          html: result.html,
+          width: result.element.scrollWidth,
+          height: 700,
+          projectId,
+        });
+
+        if (response.data) {
+          console.log("Thumbnail saved", response.data);
+        }
+        toast.success("Screenshot downloaded.");
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to screenshot canvas.");
+      } finally {
+        setIsScreenshotting(false);
+      }
+    },
+    [setSelectedFrameId],
+  );
+
+  useEffect(() => {
+    if (!projectId) return;
+    if (loadingStatus !== "completed") return;
+    saveThumbnailToProject(projectId);
+  }, [loadingStatus, projectId, saveThumbnailToProject]);
 
   const onOpenHtmlDialog = () => {
     setOpenHtmlDialog(true);
   };
+
+  function getCanvasHtmlContent() {
+    const el = canvasRootRef.current;
+    if (!el) {
+      toast.error("Canvas element not found.");
+      return null;
+    }
+    let styles = "";
+    for (const sheet of document.styleSheets) {
+      try {
+        for (const rule of sheet.cssRules) styles += rule.cssText;
+      } catch {}
+    }
+
+    return {
+      element: el,
+      html: `<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        margin: 0;
+      }
+      * {
+        box-sizing: border-box;
+      }${styles}
+    </style>
+  </head>
+  <body>
+    ${el.outerHTML}
+  </body>
+</html>
+`,
+    };
+  }
+  const handleCanvasScreenshot = useCallback(async () => {
+    try {
+      const result = getCanvasHtmlContent();
+      if (!result?.html) return toast.error("Failed to get canvas content.");
+      setSelectedFrameId(null);
+      setIsScreenshotting(true);
+
+      const response = await axios.post(
+        "/api/screenshot",
+        {
+          html: result.html,
+          width: result.element.scrollWidth,
+          height: 700,
+        },
+        {
+          responseType: "blob",
+          validateStatus: (s) => (s >= 200 && s < 300) || s === 304,
+        },
+      );
+
+      const title = projectName || "Canvas";
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `${title.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("Screenshot downloaded.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to screenshot canvas.");
+    } finally {
+      setIsScreenshotting(false);
+    }
+  }, [projectName, setSelectedFrameId]);
+
   return (
     <>
       <div
         className="relative w-full h-full overflow-hidden "
         style={{ minHeight: "20px" }}
       >
-        <CanvasFloatingToolbar projectId={projectId} />
+        <CanvasFloatingToolbar
+          isScreenshotting={isScreenshotting}
+          onScreenshot={handleCanvasScreenshot}
+          projectId={projectId}
+        />
         {currentStatus && <CanvasLoader status={currentStatus} />}
 
         <TransformWrapper
@@ -69,6 +189,7 @@ export default function Canvas({
           {({ zoomIn, zoomOut }) => (
             <>
               <div
+                ref={canvasRootRef}
                 className={cn(
                   `absolute inset-0 w-full h-full bg-[#eee] dark:bg-[#242423] p-3`,
                   toolMode === TOOL_MODE_ENUM.HAND
@@ -97,14 +218,14 @@ export default function Canvas({
                       const baseX = 100 + index * 480;
                       const y = 100;
 
-                      if (frame.isLoading) {
-                        return (
-                          <DeviceFrameSkeleton
-                            key={index}
-                            style={{ transform: `translate${baseX}px 100px` }}
-                          />
-                        );
-                      }
+                      // if (frame.isLoading) {
+                      //   return (
+                      //     <DeviceFrameSkeleton
+                      //       key={index}
+                      //       style={{ transform: `translate${baseX}px 100px` }}
+                      //     />
+                      //   );
+                      // }
                       return (
                         <DeviceFrame
                           key={frame.id}
@@ -113,6 +234,7 @@ export default function Canvas({
                           html={frame.htmlContent}
                           initialPosition={{ x: baseX, y }}
                           toolMode={toolMode}
+                          isLoading={frame.isLoading}
                           themeStyle={theme?.style}
                           scale={currentScale}
                           onOpenHtmlDialog={onOpenHtmlDialog}
@@ -154,7 +276,11 @@ export default function Canvas({
   );
 }
 
-function CanvasLoader({ status }: { status?: LoadingStatusType | "fetching" }) {
+function CanvasLoader({
+  status,
+}: {
+  status?: LoadingStatusType | "fetching" | "finalizing";
+}) {
   return (
     <div
       className={cn(
@@ -163,6 +289,7 @@ function CanvasLoader({ status }: { status?: LoadingStatusType | "fetching" }) {
         status === "running" && "bg-amber-500 text-white",
         status === "analyzing" && "bg-blue-500 text-white",
         status === "generating" && "bg-purple-500 text-white",
+        status === "finalizing" && "bg-purple-500 text-white",
       )}
     >
       <Spinner className="w-4 h-4 stroke-3!" />

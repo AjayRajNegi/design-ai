@@ -3,9 +3,12 @@ import { TOOL_MODE_ENUM, ToolModeType } from "@/constants/canvas";
 import { Rnd } from "react-rnd";
 import { useCanvas } from "@/context/CanvasProvider";
 import { getHTMLWrapper } from "@/lib/frameWrapper";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import DeviceFrameToolbar from "./DeviceFrameToolbar";
+import axios from "axios";
+import { toast } from "sonner";
+import DeviceFrameSkeleton from "./DeviceFrameSkeleton";
 
 type PropsType = {
   html: string;
@@ -17,6 +20,7 @@ type PropsType = {
   scale?: number;
   toolMode: ToolModeType;
   themeStyle?: string;
+  isLoading?: boolean;
   onOpenHtmlDialog: () => void;
 };
 
@@ -30,6 +34,7 @@ export default function DeviceFrame({
   scale = 1,
   toolMode,
   themeStyle,
+  isLoading = false,
   onOpenHtmlDialog,
 }: PropsType) {
   const { selectedFrameId, setSelectedFrameId } = useCanvas();
@@ -37,6 +42,7 @@ export default function DeviceFrame({
     width,
     height: minHeight,
   });
+  const [isDownloading, setIsDownloading] = useState(false);
   const iFrameRef = useRef<HTMLIFrameElement>(null);
   const isSelected = selectedFrameId === frameId;
   const fullHtml = getHTMLWrapper(html, title, themeStyle, frameId);
@@ -53,6 +59,39 @@ export default function DeviceFrame({
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
   }, [frameId]);
+
+  const handleDownloadPng = useCallback(async () => {
+    if (isDownloading) return;
+    setIsDownloading(true);
+
+    try {
+      const response = await axios.post(
+        "/api/screenshot",
+        {
+          html: fullHtml,
+          width: frameSize.width,
+          height: frameSize.height,
+        },
+        {
+          responseType: "blob",
+          validateStatus: (s) => (s >= 200 && s < 300) || s === 304,
+        },
+      );
+      const url = window.URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+
+      link.href = url;
+      link.download = `${title.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.png`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+      toast.success("Screenshot downloaded.");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to screenshot.");
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [frameSize.height, frameSize.width, fullHtml, isDownloading, title]);
 
   return (
     <Rnd
@@ -106,9 +145,9 @@ export default function DeviceFrame({
         <DeviceFrameToolbar
           title={title}
           isSelected={isSelected && toolMode !== TOOL_MODE_ENUM.HAND}
-          disabled={false}
-          isDownloading={false}
-          onDownloadPng={() => {}}
+          disabled={isLoading}
+          isDownloading={isDownloading}
+          onDownloadPng={handleDownloadPng}
           onOpenHtmlDialog={onOpenHtmlDialog}
         />
         <div
@@ -117,21 +156,27 @@ export default function DeviceFrame({
             isSelected && toolMode !== TOOL_MODE_ENUM.HAND && "rounded-md",
           )}
         >
-          <iframe
-            ref={iFrameRef}
-            srcDoc={fullHtml}
-            title={title}
-            sandbox="allow-scripts allows-same-origin"
-            style={{
-              width: "100%",
-              minHeight: `${minHeight}px`,
-              height: `${frameSize.height}px`,
-              border: "none",
-              pointerEvents: "none",
-              display: "block",
-              background: "white",
-            }}
-          />
+          {isLoading ? (
+            <DeviceFrameSkeleton
+              style={{ position: "relative", width, height: minHeight }}
+            />
+          ) : (
+            <iframe
+              ref={iFrameRef}
+              srcDoc={fullHtml}
+              title={title}
+              sandbox="allow-scripts allows-same-origin"
+              style={{
+                width: "100%",
+                minHeight: `${minHeight}px`,
+                height: `${frameSize.height}px`,
+                border: "none",
+                pointerEvents: "none",
+                display: "block",
+                background: "white",
+              }}
+            />
+          )}
         </div>
       </div>
     </Rnd>
