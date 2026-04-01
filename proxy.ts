@@ -1,6 +1,6 @@
 import { withAuth } from "@kinde-oss/kinde-auth-nextjs/middleware";
 
-export default withAuth(async function middleware(req: Request) {}, {
+export default withAuth(async function middleware() {}, {
   isReturnToCurrentPage: true,
   publicPaths: ["/", "/api/inngest"],
 });
