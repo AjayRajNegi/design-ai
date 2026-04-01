@@ -32,7 +32,7 @@ export default function Canvas({
 
   const currentStatus = isPending
     ? "fetching"
-    : loadingStatus !== "idle" && loadingStatus !== "completed"
+    : loadingStatus !== "idle"
       ? loadingStatus
       : null;
 
@@ -45,7 +45,7 @@ export default function Canvas({
         className="relative w-full h-full overflow-hidden "
         style={{ minHeight: "20px" }}
       >
-        <CanvasFloatingToolbar />
+        <CanvasFloatingToolbar projectId={projectId} />
         {currentStatus && <CanvasLoader status={currentStatus} />}
 
         <TransformWrapper
