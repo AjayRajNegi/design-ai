@@ -36,7 +36,7 @@ export const useUpdateProject = (projectId: string) => {
   return useMutation({
     mutationFn: async (themeId: string) =>
       await axios
-        .post(`/api/project/${projectId}`, {
+        .patch(`/api/project/${projectId}`, {
           themeId,
         })
         .then((res) => res.data),
