@@ -44,7 +44,8 @@ const AnalysisSchema = z.object({
 });
 
 export const generateScreen = inngest.createFunction(
-  { id: "generate-ui-screen", triggers: [{ event: "ui/generate.screens" }] },
+  { id: "generate-ui-screen" },
+  { event: "ui/generate.screens" },
   async ({ event, step, publish }) => {
     const {
       userId,
