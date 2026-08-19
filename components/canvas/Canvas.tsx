@@ -10,6 +10,7 @@ import DeviceFrame from "./DeviceFrame";
 import HtmlDialog from "./HtmlDialog";
 import { toast } from "sonner";
 import axios from "axios";
+import DeviceFrameSkeleton from "./DeviceFrameSkeleton";
 
 const DEMO_HTML = `<div style="color:red; height:200px;width:200px; background-color:"red">Hello</div>`;
 
@@ -218,14 +219,14 @@ export default function Canvas({
                       const baseX = 100 + index * 480;
                       const y = 100;
 
-                      // if (frame.isLoading) {
-                      //   return (
-                      //     <DeviceFrameSkeleton
-                      //       key={index}
-                      //       style={{ transform: `translate${baseX}px 100px` }}
-                      //     />
-                      //   );
-                      // }
+                      if (frame.isLoading) {
+                        return (
+                          <DeviceFrameSkeleton
+                            key={index}
+                            style={{ transform: `translate${baseX}px 100px` }}
+                          />
+                        );
+                      }
                       return (
                         <DeviceFrame
                           key={frame.id}
