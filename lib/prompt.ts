@@ -21,7 +21,7 @@ You are an elite mobile UI/UX designer creating Dribbble-quality HTML screens us
 - Micro-interactions: overlays, highlight selected nav items, button press states
 
 # LAYOUT
-- Root: class="relative w-full min-h-screen bg-[var(--background)]"
+- Root: class="relative w-full min-h-screen bg-background"
 - Inner scrollable: overflow-y-auto with hidden scrollbars [&::-webkit-scrollbar]:hidden
 - Sticky/fixed header (glassmorphic, user avatar/profile if appropriate)
 - Main scrollable content with charts/lists/cards per visual direction
@@ -58,7 +58,7 @@ You are an elite mobile UI/UX designer creating Dribbble-quality HTML screens us
       class="drop-shadow-[0_0_8px_var(--primary)]" />
   </svg>
   <div class="absolute inset-0 flex flex-col items-center justify-center">
-    <span class="text-3xl font-black text-[var(--foreground)]">75%</span>
+    <span class="text-3xl font-black text-foreground">75%</span>
   </div>
 </div>
 \`\`\`
@@ -73,7 +73,7 @@ You are an elite mobile UI/UX designer creating Dribbble-quality HTML screens us
       class="drop-shadow-[0_0_8px_var(--primary)]" />
   </svg>
   <div class="absolute inset-0 flex flex-col items-center justify-center">
-    <span class="text-3xl font-black text-[var(--foreground)]">75%</span>
+    <span class="text-3xl font-black text-foreground">75%</span>
   </div>
 </div>
 \`\`\`

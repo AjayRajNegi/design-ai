@@ -30,8 +30,8 @@ export default function DeviceFrameToolbar({
       className={cn(
         `absolute flex items-center gap-2 rounded-4 z-50`,
         isSelected
-          ? "left-1/2 -translate-x-1/2 border bg-card dark:bg-muted pl-2 py-1 shadow-sm min-w-[260px] h-[35px]"
-          : "w-[150px] h-auto left-10",
+          ? "left-1/2 -translate-x-1/2 border bg-card dark:bg-muted pl-2 py-1 shadow-sm min-w-65 h-8.75"
+          : "w-37.5 h-auto left-10",
       )}
       style={{
         top: isSelected ? "-70px" : "-30px",
@@ -47,7 +47,7 @@ export default function DeviceFrameToolbar({
         <div
           className={cn(
             `min-w-20 font-medium text-sm mx-px truncate`,
-            isSelected && "w-[100px]",
+            isSelected && "w-25",
           )}
         >
           {title}
