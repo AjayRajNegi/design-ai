@@ -46,6 +46,8 @@ const AnalysisSchema = z.object({
 export const generateScreen = inngest.createFunction(
   { id: "generate-ui-screen" },
   { event: "ui/generate.screens" },
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
   async ({ event, step, publish }) => {
     const {
       userId,
