@@ -3,11 +3,14 @@
 Design AI is a Next.js application that generates mobile app UI screens from a text prompt.  
 It creates projects, plans screens with AI, generates HTML-based frames, and renders project thumbnails.
 
+It is an AI-powered UI generation platform using asynchronous pipeline with OpenRouter API, transforming natural-
+language prompts into multi-screen app interfaces.
+
 ## Tech Stack
 
 - Next.js 16 (App Router) + React 19 + TypeScript
 - Tailwind CSS 4 + shadcn/ui components
-- Prisma ORM with MongoDB
+- Prisma ORM with PostgreSQL
 - Kinde authentication
 - Inngest for background job orchestration and realtime progress events
 - OpenRouter (AI SDK provider) for model calls
@@ -25,7 +28,7 @@ It creates projects, plans screens with AI, generates HTML-based frames, and ren
 ## Prerequisites
 
 - Node.js 20+ (or Bun)
-- MongoDB database
+- PostgreSQL database
 - A Kinde app for authentication
 - OpenRouter API key
 - Unsplash access key (used by the image tool in generation)
@@ -96,7 +99,7 @@ Each project can have multiple frames.
 ## How Generation Works
 
 1. User submits a prompt.
-2. A project is created in MongoDB.
+2. A project is created in PostgreSQL.
 3. An Inngest event (`ui/generate.screens`) is sent.
 4. Inngest function:
    - analyzes prompt and picks/plans screens,
