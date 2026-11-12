@@ -33,12 +33,6 @@ export async function GET(
       );
     }
 
-    // return NextResponse.json(
-    //   {
-    //     project,
-    //   },
-    //   { status: 200 },
-    // );
     return NextResponse.json(project, { status: 200 });
   } catch (error) {
     console.log("Error occured:", error);

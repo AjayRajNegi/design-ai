@@ -1,4 +1,3 @@
-// ex. /app/actions/get-subscribe-token.ts
 "use server";
 
 import { inngest } from "@/inngest/client";
