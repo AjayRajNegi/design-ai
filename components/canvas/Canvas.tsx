@@ -288,7 +288,7 @@ function CanvasLoader({
 	return (
 		<div
 			className={cn(
-				`absolute top-20 left-1/2 -translate-x-1/2 min-w-40 max-w-full px-4 pt-1.5 pb-2 rounded-br-xl rounded-bl-xl shadow-md flex items-center space-x-2 z-10`,
+				`absolute top-5 left-1/2 -translate-x-1/2 min-w-40 max-w-full px-4 pt-1.5 pb-2 rounded-br-xl rounded-bl-xl shadow-md flex items-center space-x-2 z-10`,
 				status === "fetching" && "bg-gray-500 text-white",
 				status === "running" && "bg-amber-500 text-white",
 				status === "analyzing" && "bg-blue-500 text-white",

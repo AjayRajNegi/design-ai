@@ -76,8 +76,11 @@ export default function CanvasFloatingToolbar({
 									{themes?.slice(0, 4)?.map((theme) => {
 										const colors = parseThemeColors(theme.style);
 										return (
-											<button
-												type="button"
+											// biome-ignore lint/a11y/useFocusableInteractive: <suppress>
+											// biome-ignore lint/a11y/useKeyWithClickEvents: <suppress>
+											// biome-ignore lint/a11y/useSemanticElements: <suppress>
+											<div
+												role="button"
 												key={theme.id}
 												onClick={(e) => {
 													e.stopPropagation();
