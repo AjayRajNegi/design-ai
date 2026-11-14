@@ -1,149 +1,149 @@
 import { generateObject, generateText, stepCountIs } from "ai";
-import { inngest } from "../client";
 import { z } from "zod";
 import { openrouter } from "@/lib/openrouter";
-import { FrameType } from "@/types/project";
-import { ANALYSIS_PROMPT, GENERATION_SYSTEM_PROMPT } from "@/lib/prompt";
 import prisma from "@/lib/primsa";
+import { ANALYSIS_PROMPT, GENERATION_SYSTEM_PROMPT } from "@/lib/prompt";
+import type { FrameType } from "@/types/project";
 import { BASE_VARIABLES, THEME_LIST } from "@/types/themes";
+import { inngest } from "../client";
 import { unsplashTool } from "./tool";
 
 const AnalysisSchema = z.object({
-  theme: z
-    .string()
-    .describe(
-      `The specific visual theme ID (e.g, "midnight","ocean-breeze", "neo-brutalism")`,
-    ),
-  screens: z
-    .array(
-      z.object({
-        id: z
-          .string()
-          .describe(
-            `Unique identifier for the screens (e.g., 'home-dashboard', 'profile-settings','transaction-history', Use kebab-case.)`,
-          ),
-        name: z
-          .string()
-          .describe(
-            `Short, descriptive name of the screen (e.g., "Home Dashboard", "Profile", "Transaction History")`,
-          ),
-        purpose: z
-          .string()
-          .describe(
-            `One clear sentence explaining what this screen accomplishes for the user and its role in the app`,
-          ),
-        visualDescription: z
-          .string()
-          .describe(
-            `A dense, high-fidelity visual directive (like an image generation prompt). Describe the layout, specific data examples (e.g. 'Oct-Mar), component hierarchy, and physical attributes (e.g., 'Chunky cards','Floating header','Floadting action button','Bottom navigation')`,
-          ),
-      }),
-    )
-    .min(3)
-    .max(4),
+	theme: z
+		.string()
+		.describe(
+			`The specific visual theme ID (e.g, "midnight","ocean-breeze", "neo-brutalism")`,
+		),
+	screens: z
+		.array(
+			z.object({
+				id: z
+					.string()
+					.describe(
+						`Unique identifier for the screens (e.g., 'home-dashboard', 'profile-settings','transaction-history', Use kebab-case.)`,
+					),
+				name: z
+					.string()
+					.describe(
+						`Short, descriptive name of the screen (e.g., "Home Dashboard", "Profile", "Transaction History")`,
+					),
+				purpose: z
+					.string()
+					.describe(
+						`One clear sentence explaining what this screen accomplishes for the user and its role in the app`,
+					),
+				visualDescription: z
+					.string()
+					.describe(
+						`A dense, high-fidelity visual directive (like an image generation prompt). Describe the layout, specific data examples (e.g. 'Oct-Mar), component hierarchy, and physical attributes (e.g., 'Chunky cards','Floating header','Floadting action button','Bottom navigation')`,
+					),
+			}),
+		)
+		.min(3)
+		.max(4),
 });
 
 export const generateScreen = inngest.createFunction(
-  { id: "generate-ui-screen" },
-  { event: "ui/generate.screens" },
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  async ({ event, step, publish }) => {
-    const {
-      userId,
-      projectId,
-      prompt,
-      frames,
-      theme: existingTHeme,
-    } = event.data;
-    const CHANNEL = `user:${userId}`;
-    const isExistingGeneration = Array.isArray(frames) && frames.length > 0;
+	{ id: "generate-ui-screen" },
+	{ event: "ui/generate.screens" },
+	// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+	// @ts-expect-error
+	async ({ event, step, publish }) => {
+		const {
+			userId,
+			projectId,
+			prompt,
+			frames,
+			theme: existingTHeme,
+		} = event.data;
+		const CHANNEL = `user:${userId}`;
+		const isExistingGeneration = Array.isArray(frames) && frames.length > 0;
 
-    await publish({
-      channel: CHANNEL,
-      topic: "generation.start",
-      data: {
-        status: "running",
-        projectId: projectId,
-      },
-    });
+		await publish({
+			channel: CHANNEL,
+			topic: "generation.start",
+			data: {
+				status: "running",
+				projectId: projectId,
+			},
+		});
 
-    // Analyze the prompts
-    const analysis = await step.run("analyze-and-plan-screens", async () => {
-      await publish({
-        channel: CHANNEL,
-        topic: "analysis.start",
-        data: {
-          status: "analyzing",
-          projectId: projectId,
-        },
-      });
-      const contextHTML = isExistingGeneration
-        ? frames
-            .slice(0, 4)
-            .map((frame: FrameType) => frame.htmlContent)
-            .join("\n")
-        : "";
+		// Analyze the prompts
+		const analysis = await step.run("analyze-and-plan-screens", async () => {
+			await publish({
+				channel: CHANNEL,
+				topic: "analysis.start",
+				data: {
+					status: "analyzing",
+					projectId: projectId,
+				},
+			});
+			const contextHTML = isExistingGeneration
+				? frames
+						.slice(0, 4)
+						.map((frame: FrameType) => frame.htmlContent)
+						.join("\n")
+				: "";
 
-      const analysisPrompt = isExistingGeneration
-        ? `USER REQUEST:${prompt} SELECTED THEME:${existingTHeme} CONTEXT HTML:${contextHTML}`.trim()
-        : `USER REQUEST:${prompt}.trim()`;
+			const analysisPrompt = isExistingGeneration
+				? `USER REQUEST:${prompt} SELECTED THEME:${existingTHeme} CONTEXT HTML:${contextHTML}`.trim()
+				: `USER REQUEST:${prompt}.trim()`;
 
-      const { object } = await generateObject({
-        model: openrouter.chat("google/gemini-2.5-flash-lite"),
-        schema: AnalysisSchema,
-        system: ANALYSIS_PROMPT,
-        prompt: analysisPrompt,
-      });
+			const { object } = await generateObject({
+				model: openrouter.chat("google/gemini-2.5-flash-lite"),
+				schema: AnalysisSchema,
+				system: ANALYSIS_PROMPT,
+				prompt: analysisPrompt,
+			});
 
-      const themeToUse = isExistingGeneration ? existingTHeme : object.theme;
+			const themeToUse = isExistingGeneration ? existingTHeme : object.theme;
 
-      if (!isExistingGeneration) {
-        await prisma.project.update({
-          where: {
-            id: projectId,
-            userId: userId,
-          },
-          data: {
-            theme: themeToUse,
-          },
-        });
-      }
+			if (!isExistingGeneration) {
+				await prisma.project.update({
+					where: {
+						id: projectId,
+						userId: userId,
+					},
+					data: {
+						theme: themeToUse,
+					},
+				});
+			}
 
-      await publish({
-        channel: CHANNEL,
-        topic: "analysis.complete",
-        data: {
-          status: "generating",
-          theme: themeToUse,
-          totalScreens: object.screens.length,
-          screens: object.screens,
-          projectId: projectId,
-        },
-      });
+			await publish({
+				channel: CHANNEL,
+				topic: "analysis.complete",
+				data: {
+					status: "generating",
+					theme: themeToUse,
+					totalScreens: object.screens.length,
+					screens: object.screens,
+					projectId: projectId,
+				},
+			});
 
-      return { ...object, themeToUse };
-    });
+			return { ...object, themeToUse };
+		});
 
-    // Screen generation of each screens
+		// Screen generation of each screens
 
-    for (let i = 0; i < analysis.screens.length; i++) {
-      const screenPlan = analysis.screens[i];
-      const selectedTheme = THEME_LIST.find(
-        (t) => t.id === analysis.themeToUse,
-      );
+		for (let i = 0; i < analysis.screens.length; i++) {
+			const screenPlan = analysis.screens[i];
+			const selectedTheme = THEME_LIST.find(
+				(t) => t.id === analysis.themeToUse,
+			);
 
-      // combine theme + base variable
+			// combine theme + base variable
 
-      const fullThemeCSS = `${BASE_VARIABLES} ${selectedTheme?.style || ""} `;
+			const fullThemeCSS = `${BASE_VARIABLES} ${selectedTheme?.style || ""} `;
 
-      await step.run(`generate-screen-${i}`, async () => {
-        const result = await generateText({
-          model: openrouter.chat("google/gemini-2.5-flash-lite"),
-          system: GENERATION_SYSTEM_PROMPT,
-          tools: { unsplashTool },
-          stopWhen: stepCountIs(5),
-          prompt: `- Screen ${i + 1}/${analysis.screens.length}
+			await step.run(`generate-screen-${i}`, async () => {
+				const result = await generateText({
+					model: openrouter.chat("google/gemini-2.5-flash-lite"),
+					system: GENERATION_SYSTEM_PROMPT,
+					tools: { unsplashTool },
+					stopWhen: stepCountIs(5),
+					prompt: `- Screen ${i + 1}/${analysis.screens.length}
           - Screen ID: ${screenPlan.id}
           - Screen Name: ${screenPlan.name}
           - Screen Purpose: ${screenPlan.purpose}
@@ -159,9 +159,9 @@ export const generateScreen = inngest.createFunction(
             - No overflow classes on the root.
             - All scrollable content must be in inner containers with hidden scrollbars: [&::-webkit-scrollbar] hidden scrollbar-none
             3. **For absolute overlays (maps, bottom sheets, modals, etc.):**
-            - Use \'relative w-full h-screen\ on the top div of the overlay.
+            - Use 'relative w-full h-screen on the top div of the overlay.
             4. **For regular content:**
-            - Use \w-full h-full min-h-screen\ on the top div.
+            - Use w-full h-full min-h-screen on the top div.
             5. **Do not use h-screen on inner content unless absolutely required.**
             - Height must grow with content; content must be fully visible inside an iframe.
             6. **For z-index layering:**
@@ -172,42 +172,42 @@ export const generateScreen = inngest.createFunction(
             9. **Ensure iframe-friendly rendering:**
             - All elements must contribute to the final scrollHeight so your parent iframe can correctly resize.
             Generate the complete, production-ready HTML for this screen now`.trim(),
-        });
+				});
 
-        let finalHtml = result.text ?? "";
-        const match = finalHtml.match(/<div[\s\s]*<\/div>/);
-        finalHtml = match ? match[0] : finalHtml;
-        finalHtml = finalHtml.replace(/```/g, "");
+				let finalHtml = result.text ?? "";
+				const match = finalHtml.match(/<div[\s\s]*<\/div>/);
+				finalHtml = match ? match[0] : finalHtml;
+				finalHtml = finalHtml.replace(/```/g, "");
 
-        // create the frame
-        const frame = await prisma.frame.create({
-          data: {
-            projectId,
-            title: screenPlan.name,
-            htmlContent: finalHtml,
-          },
-        });
+				// create the frame
+				const frame = await prisma.frame.create({
+					data: {
+						projectId,
+						title: screenPlan.name,
+						htmlContent: finalHtml,
+					},
+				});
 
-        await publish({
-          channel: CHANNEL,
-          topic: "frame.craeted",
-          data: {
-            frame: frame,
-            screenId: screenPlan.id,
-            projectId: projectId,
-          },
-        });
+				await publish({
+					channel: CHANNEL,
+					topic: "frame.created",
+					data: {
+						frame: frame,
+						screenId: screenPlan.id,
+						projectId: projectId,
+					},
+				});
 
-        return { success: true, frame: frame };
-      });
-    }
-    await publish({
-      channel: CHANNEL,
-      topic: "generation.complete",
-      data: {
-        status: "completed",
-        projectId: projectId,
-      },
-    });
-  },
+				return { success: true, frame: frame };
+			});
+		}
+		await publish({
+			channel: CHANNEL,
+			topic: "generation.complete",
+			data: {
+				status: "completed",
+				projectId: projectId,
+			},
+		});
+	},
 );
